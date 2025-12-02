@@ -21,25 +21,63 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: medication-app-spa-bucket
-        WebsiteConfiguration:
-          IndexDocument: index.html
-          ErrorDocument: index.html
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+
+    # Origin Access Identity for CloudFront (legacy but more compatible)
+    CloudFrontOriginAccessIdentity:
+      Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+      Properties:
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: Access identity for medication-app-spa-bucket
 
     CDNDistribution:
       Type: AWS::CloudFront::Distribution
       Properties:
         DistributionConfig:
           Origins:
-            - DomainName: !GetAtt FrontendBucket.DomainName
+            - DomainName: !GetAtt FrontendBucket.RegionalDomainName
               Id: S3Origin
-              S3OriginConfig: {}
+              S3OriginConfig:
+                OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
           Enabled: true
           DefaultRootObject: index.html
           DefaultCacheBehavior:
             TargetOriginId: S3Origin
             ViewerProtocolPolicy: redirect-to-https
-            AllowedMethods: ["GET", "HEAD"]
+            AllowedMethods: ["GET", "HEAD", "OPTIONS"]
             CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # AWS Managed CachingOptimized Policy
+            Compress: true
           ViewerCertificate:
             CloudFrontDefaultCertificate: true
+
+    # Bucket Policy to allow CloudFront OAI access
+    FrontendBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref FrontendBucket
+        PolicyDocument:
+          Statement:
+            - Sid: AllowCloudFrontOAI
+              Effect: Allow
+              Principal:
+                AWS: !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}"
+              Action: s3:GetObject
+              Resource: !Sub "arn:aws:s3:::${FrontendBucket}/*"
+
+  Outputs:
+    CloudFrontUrl:
+      Description: CloudFront Distribution URL
+      Value: !Sub "https://${CDNDistribution.DomainName}"
+    
+    CloudFrontDistributionId:
+      Description: CloudFront Distribution ID
+      Value: !Ref CDNDistribution
+    
+    S3BucketName:
+      Description: S3 Bucket Name
+      Value: !Ref FrontendBucket
 

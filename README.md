@@ -61,6 +61,94 @@ Preview the production build:
 npm run preview
 ```
 
+## Deployment to AWS (Serverless)
+
+The application can be deployed to AWS S3 and CloudFront using the Serverless Framework.
+
+### Prerequisites
+
+- AWS CLI configured with appropriate credentials
+- Serverless Framework installed globally or as a dev dependency
+- AWS account with permissions to create S3 buckets and CloudFront distributions
+
+### Install Serverless Framework
+
+If not already installed:
+
+```bash
+npm install -g serverless
+```
+
+Or install as a dev dependency:
+
+```bash
+npm install -D serverless
+```
+
+### Configure AWS Credentials
+
+Ensure your AWS credentials are configured:
+
+```bash
+aws configure
+```
+
+Or set environment variables:
+
+```bash
+export AWS_ACCESS_KEY_ID=your-access-key
+export AWS_SECRET_ACCESS_KEY=your-secret-key
+export AWS_REGION=us-east-1
+```
+
+### Deploy
+
+Before deploying, ensure your `.env` file contains the production API URL:
+
+```env
+VITE_API_URL=https://your-production-api-url.com
+```
+
+**Important**: The `VITE_API_URL` from your `.env` file will be embedded into the JavaScript bundle during the build process. Make sure it's set to your production API URL before deploying.
+
+Deploy to AWS:
+
+```bash
+npm run deploy
+```
+
+This command will:
+1. Build the application (`npm run build`)
+2. Deploy to AWS using Serverless Framework
+3. Create/update the S3 bucket (`medication-app-spa-bucket`)
+4. Sync the `dist` folder to S3
+5. Create/update the CloudFront distribution
+
+### Deployment Details
+
+The `serverless.yml` configuration:
+- **S3 Bucket**: `medication-app-spa-bucket` (static website hosting enabled)
+- **CloudFront Distribution**: CDN for fast global delivery
+- **Region**: `us-east-1`
+- **Build Output**: `dist` folder (Vite build output)
+
+### Updating the Deployment
+
+To update the deployment after making changes:
+
+1. Update your code
+2. Ensure `.env` has the correct API URL
+3. Run `npm run deploy`
+
+### Environment Variables in Production
+
+**Note**: Since Vite embeds environment variables at build time, the API URL from your local `.env` file will be hardcoded into the production bundle. To change the API URL:
+
+1. Update the `VITE_API_URL` in your local `.env` file
+2. Rebuild and redeploy: `npm run deploy`
+
+The `.env` file itself is never deployed to S3 - only the built JavaScript files (which contain the embedded API URL) are deployed.
+
 ## Testing the Application
 
 ### Initial Setup
@@ -233,6 +321,9 @@ npm run build
 # Preview production build
 npm run preview
 
+# Deploy to AWS (builds and deploys)
+npm run deploy
+
 # Run linter
 npm run lint
 ```
@@ -245,6 +336,7 @@ npm run lint
 - **Tailwind CSS 4** - Styling
 - **React Router DOM** - Client-side routing
 - **Font Awesome** - Icons
+- **Serverless Framework** - AWS deployment automation
 
 ## Browser Support
 

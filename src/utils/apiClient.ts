@@ -15,13 +15,18 @@ export function getBaseUrl(): string {
  * Custom error class for API-related errors
  */
 export class ApiError extends Error {
+  statusCode?: number
+  responseText?: string
+
   constructor(
     message: string,
-    public statusCode?: number,
-    public responseText?: string
+    statusCode?: number,
+    responseText?: string
   ) {
     super(message)
     this.name = 'ApiError'
+    this.statusCode = statusCode
+    this.responseText = responseText
   }
 }
 
