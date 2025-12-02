@@ -2,6 +2,12 @@
 
 A modern React + TypeScript single-page application for managing medication schedules and tracking upcoming doses. Built with Vite, Tailwind CSS, and React Router.
 
+## Architecture Overview
+
+The frontend is built as a React single-page application and is hosted in an S3 bucket as static files. To make the app load fast and be accessible from anywhere, I placed CloudFront on top of S3 as the CDN layer. CloudFront handles caching, HTTPS, and global distribution, while S3 simply serves the built React files. The browser loads all the UI from CloudFront, and any API requests from the frontend go directly to API Gateway, which connects to the backend.
+
+![Frontend Architecture Diagram](src/assets/arch-design-frontend.png)
+
 ## Features
 
 - **View Upcoming Doses**: See all scheduled medication doses grouped by date (Today, Tomorrow, This Week, Later)
@@ -131,12 +137,6 @@ The `serverless.yml` configuration:
 - **CloudFront Distribution**: CDN for fast global delivery
 - **Region**: `us-east-1`
 - **Build Output**: `dist` folder (Vite build output)
-
-### Architecture Overview
-
-The frontend is built as a React single-page application and is hosted in an S3 bucket as static files. To make the app load fast and be accessible from anywhere, I placed CloudFront on top of S3 as the CDN layer. CloudFront handles caching, HTTPS, and global distribution, while S3 simply serves the built React files. The browser loads all the UI from CloudFront, and any API requests from the frontend go directly to API Gateway, which connects to the backend.
-
-![Frontend Architecture Diagram](src/assets/arch-design-frontend.png)
 
 ### Updating the Deployment
 
