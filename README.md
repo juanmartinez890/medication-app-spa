@@ -36,10 +36,10 @@ cp .env.example .env
 Or create `.env` manually with:
 
 ```env
-VITE_API_URL=https://your-api-url.com
+VITE_API_URL=https://d1cqiieioszb2s.cloudfront.net
 ```
 
-**Note**: Replace `https://your-api-url.com` with your actual API base URL (e.g., `https://k9ypg6i6yc.execute-api.us-east-1.amazonaws.com`)
+**Note**: Replace `https://d1cqiieioszb2s.cloudfront.net` with your actual API base URL if it differs in your environment.
 
 ### 3. Start Development Server
 
@@ -106,10 +106,10 @@ export AWS_REGION=us-east-1
 Before deploying, ensure your `.env` file contains the production API URL:
 
 ```env
-VITE_API_URL=https://your-production-api-url.com
+VITE_API_URL=https://d1cqiieioszb2s.cloudfront.net
 ```
 
-**Important**: The `VITE_API_URL` from your `.env` file will be embedded into the JavaScript bundle during the build process. Make sure it's set to your production API URL before deploying.
+**Important**: The `VITE_API_URL` from your `.env` file will be embedded into the JavaScript bundle during the build process. Make sure it's set to your production API URL (for example, `https://d1cqiieioszb2s.cloudfront.net`) before deploying.
 
 Deploy to AWS:
 
@@ -131,6 +131,12 @@ The `serverless.yml` configuration:
 - **CloudFront Distribution**: CDN for fast global delivery
 - **Region**: `us-east-1`
 - **Build Output**: `dist` folder (Vite build output)
+
+### Architecture Overview
+
+The frontend is built as a React single-page application and is hosted in an S3 bucket as static files. To make the app load fast and be accessible from anywhere, I placed CloudFront on top of S3 as the CDN layer. CloudFront handles caching, HTTPS, and global distribution, while S3 simply serves the built React files. The browser loads all the UI from CloudFront, and any API requests from the frontend go directly to API Gateway, which connects to the backend.
+
+![Frontend Architecture Diagram](src/assets/arch-design-frontend.png)
 
 ### Updating the Deployment
 
