@@ -41,7 +41,7 @@ function AppContent() {
 
       <main className="w-full">
         <Routes>
-          <Route path="/" element={<UpcomingDosesPage />} />
+          <Route path="/" element={<UpcomingDosesPage onNotification={showNotification} />} />
         </Routes>
       </main>
 

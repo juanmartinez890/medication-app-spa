@@ -5,6 +5,7 @@ export type Medication = {
   dosage: string
   recurrence: string
   notes?: string
+  active?: boolean
 }
 
 export type Dose = {

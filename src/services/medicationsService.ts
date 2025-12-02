@@ -26,3 +26,20 @@ export async function createMedication(payload: MedicationPayload): Promise<void
   })
 }
 
+/**
+ * Marks an existing medication as inactive for a given care recipient.
+ * @param careRecipientId - The care recipient ID
+ * @param medicationId - The medication ID to mark inactive
+ */
+export async function markMedicationInactive(
+  careRecipientId: string,
+  medicationId: string
+): Promise<void> {
+  await apiRequest<void>(
+    `/care-recipients/${careRecipientId}/medications/${medicationId}/inactive`,
+    {
+      method: 'POST',
+    }
+  )
+}
+

@@ -6,6 +6,7 @@ import { getOrCreateCareRecipientId } from '../utils/careRecipient'
 import { colors } from '../theme'
 import DoseCard from '../components/DoseCard'
 import { getUpcomingDoses, markDoseAsTaken } from '../services/dosesService'
+import { markMedicationInactive } from '../services/medicationsService'
 import { type Dose } from '../types'
 import { DOSE_STATUS } from '../constants/doseStatus'
 import { DOSE_CONSTANTS, DATE_GROUP_LABELS } from '../constants/dose'
@@ -16,11 +17,16 @@ type GroupedDoses = {
   doses: Dose[]
 }
 
-export default function UpcomingDosesPage() {
+type UpcomingDosesPageProps = {
+  onNotification?: (message: string, type: 'success' | 'error') => void
+}
+
+export default function UpcomingDosesPage({ onNotification }: UpcomingDosesPageProps) {
   const [doses, setDoses] = useState<Dose[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [markingAsTaken, setMarkingAsTaken] = useState<string | null>(null)
+  const [inactivatingMedicationId, setInactivatingMedicationId] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchUpcoming() {
@@ -53,19 +59,61 @@ export default function UpcomingDosesPage() {
       // Update the dose in the list
       setDoses((prevDoses) =>
         prevDoses.map((d) =>
-          d.doseId === dose.doseId
-            ? { ...d, status: DOSE_STATUS.TAKEN }
-            : d
+          d.doseId === dose.doseId ? { ...d, status: DOSE_STATUS.TAKEN } : d
         )
       )
+      onNotification?.('Dose marked as taken.', 'success')
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Failed to mark dose as taken'
+        err instanceof Error ? err.message : 'Failed to mark dose as taken.'
       setError(message)
+      onNotification?.(message, 'error')
       // Clear error after timeout
       setTimeout(() => setError(null), DOSE_CONSTANTS.ERROR_CLEAR_TIMEOUT_MS)
     } finally {
       setMarkingAsTaken(null)
+    }
+  }
+
+  const handleToggleMedicationActive = async (dose: Dose, nextActive: boolean) => {
+    // Only support toggling from active -> inactive from this screen
+    if (nextActive) {
+      return
+    }
+
+    try {
+      setInactivatingMedicationId(dose.medicationId)
+      const careRecipientId = getOrCreateCareRecipientId()
+
+      await markMedicationInactive(careRecipientId, dose.medicationId)
+
+      // Mark all doses for this medication as inactive in local state
+      setDoses((prev) =>
+        prev.map((d) =>
+          d.medicationId === dose.medicationId
+            ? {
+                ...d,
+                medication: {
+                  ...d.medication,
+                  active: false,
+                },
+              }
+            : d
+        )
+      )
+
+      onNotification?.(
+        'This medication has been marked as inactive. Future doses will no longer be scheduled.',
+        'success'
+      )
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to mark medication as inactive.'
+      setError(message)
+      onNotification?.(message, 'error')
+      setTimeout(() => setError(null), DOSE_CONSTANTS.ERROR_CLEAR_TIMEOUT_MS)
+    } finally {
+      setInactivatingMedicationId(null)
     }
   }
 
@@ -133,6 +181,8 @@ export default function UpcomingDosesPage() {
                       dose={dose}
                       markingAsTaken={markingAsTaken}
                       onMarkAsTaken={handleMarkAsTaken}
+                      onToggleMedicationActive={handleToggleMedicationActive}
+                      inactivatingMedicationId={inactivatingMedicationId}
                     />
                   ))}
                 </div>

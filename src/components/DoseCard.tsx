@@ -12,11 +12,21 @@ import { formatDateTime, isMissed, getTimeBadgeColor } from '../utils/dateUtils'
 type DoseCardProps = {
   dose: Dose
   markingAsTaken: string | null
+  inactivatingMedicationId: string | null
   onMarkAsTaken: (dose: Dose) => void
+  onToggleMedicationActive: (dose: Dose, nextActive: boolean) => void
 }
 
+export default function DoseCard({
+  dose,
+  markingAsTaken,
+  inactivatingMedicationId,
+  onMarkAsTaken,
+  onToggleMedicationActive,
+}: DoseCardProps) {
+  const isMedicationActive = dose.medication?.active !== false
+  const isInactivating = inactivatingMedicationId === dose.medicationId
 
-export default function DoseCard({ dose, markingAsTaken, onMarkAsTaken }: DoseCardProps) {
   return (
     <article
       key={dose.doseId}
@@ -58,7 +68,7 @@ export default function DoseCard({ dose, markingAsTaken, onMarkAsTaken }: DoseCa
               </div>
             </div>
 
-            {/* Right Side - Time and Actions */}
+            {/* Right Side - Time, Status and Actions */}
             <div className="flex-shrink-0 flex flex-col items-start sm:items-end gap-2 md:gap-2.5 w-full sm:w-auto">
               <div className="flex flex-col items-start sm:items-end gap-1">
                 <div className="flex flex-col items-start sm:items-end gap-1">
@@ -78,7 +88,7 @@ export default function DoseCard({ dose, markingAsTaken, onMarkAsTaken }: DoseCa
                   {formatDateTime(dose.dueAt).date}
                 </span>
               </div>
-              {dose.status === DOSE_STATUS.UPCOMING && (
+              {dose.status === DOSE_STATUS.UPCOMING && isMedicationActive && (
                 <button
                   className="flex items-center justify-center gap-1.5 rounded-full px-4 md:px-6 py-2 md:py-3 text-[11px] md:text-xs font-semibold text-white shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 w-full sm:w-auto"
                   style={{ backgroundColor: colors.primary, fontWeight: 600, color: colors.white }}
@@ -111,6 +121,28 @@ export default function DoseCard({ dose, markingAsTaken, onMarkAsTaken }: DoseCa
                   Taken
                 </div>
               )}
+              {/* Medication active/inactive toggle */}
+              <div className="mt-1 flex items-center gap-2 text-[10px] md:text-xs">
+                <span style={{ color: colors.secondary }}>
+                  {isMedicationActive ? 'Medication is active' : 'Medication is inactive'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onToggleMedicationActive(dose, !isMedicationActive)}
+                  disabled={!isMedicationActive || isInactivating}
+                  className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors disabled:opacity-60 ${
+                    isMedicationActive ? 'bg-emerald-500' : 'bg-slate-300'
+                  }`}
+                  aria-pressed={isMedicationActive}
+                  aria-label={isMedicationActive ? 'Mark medication as inactive' : 'Medication inactive'}
+                >
+                  <span
+                    className={`inline-block h-3 w-3 rounded-full bg-white shadow transition-transform ${
+                      isMedicationActive ? 'translate-x-4' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
           </div>
         </div>
