@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@import "./theme.css";
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--color-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Playfair Display", "Georgia", serif;
+  font-weight: 600;
+  color: var(--color-headline);
+}
+
+p, span, div, a, button, input, textarea, select, label {
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  color: var(--color-body-dark);
+}
+
