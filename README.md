@@ -227,6 +227,8 @@ The `.env` file itself is never deployed to S3 - only the built JavaScript files
    - After success, button changes to "Taken" with checkmark
    - Dose status updates in the list
 
+  **NOTE: Doses can be marked as taken even if they are outside of the time winndow for testing purposes of this app.**:
+
 #### 5. Error Handling
 
 - **Test API Error**: 
