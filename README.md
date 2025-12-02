@@ -17,6 +17,10 @@ The frontend is built as a React single-page application and is hosted in an S3 
 - **Notifications**: Success and error notifications for user actions
 - **Local Storage**: Automatically manages care recipient ID
 
+### Care Recipient ID behavior
+
+For this evaluation, the scope of the frontend is limited to storing only medication and dose information. The **care recipient ID** is generated entirely in the frontend and stored in a browser `localStorage` key. All API calls use this generated ID so that doses and medications are consistently associated with the same care recipient for that browser. If the browser cache/local storage is cleared, the previous ID is lost and a **new care recipient ID** will be generated on next load, effectively giving you a fresh, isolated dataset.
+
 ## Prerequisites
 
 - **Node.js** (v18 or higher recommended)
